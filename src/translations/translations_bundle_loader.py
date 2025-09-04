@@ -1,4 +1,4 @@
-from src.config import settings
+from src.config import default_settings
 from src.database.sa_tables import Types
 from src.database.sqlite_helper import SqliteHelper
 from src.translations.translation_bundle import TranslationBundle
@@ -6,7 +6,7 @@ from src.translations.translation_bundle import TranslationBundle
 
 def get_translation_bundle_from_sql() -> TranslationBundle:
     db = SqliteHelper()
-    db.init_db(url=settings.DB_PATH)
+    db.init_db(url=default_settings.DB_PATH)
     words = db.get_all_tags_of_type(type_name=Types.WORD.value)
     phrases = db.get_all_tags_of_type(type_name=Types.PHRASE.value)
     no_translations = db.get_all_tags_of_type(type_name=Types.NO_TRANSLATION.value)

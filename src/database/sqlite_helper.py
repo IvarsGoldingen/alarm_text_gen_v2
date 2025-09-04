@@ -4,12 +4,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from src.config import settings
+from src.config import default_settings
 from src.database.db_protocol import Db_proto
 from src.database.sa_tables import Base, Tag, TagType
 
 logger = logging.getLogger(__name__)
-logger.setLevel(settings.LOGGING_LVL_GLOBAL)
+logger.setLevel(default_settings.LOGGING_LVL_GLOBAL)
 
 
 class SqliteHelper(Db_proto):

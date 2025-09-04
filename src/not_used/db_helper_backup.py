@@ -3,13 +3,13 @@ import logging
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from src.config import settings
-from src.database.sa_tables import Base, Phrase
+from src.config import default_settings
+from src.database.sa_tables import Base
 
 logger = logging.getLogger(__name__)
-logger.setLevel(settings.LOGGING_LVL_GLOBAL)
+logger.setLevel(default_settings.LOGGING_LVL_GLOBAL)
 
-DATABASE_URL = f"sqlite:///{settings.DB_PATH}"
+DATABASE_URL = f"sqlite:///{default_settings.DB_PATH}"
 # Create engine
 engine = create_engine(DATABASE_URL, echo=False)
 # Create session factory

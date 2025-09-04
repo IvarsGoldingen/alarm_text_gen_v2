@@ -1,8 +1,8 @@
 import logging
 
-from src.config import settings
+from src.config import default_settings
+from src.config.default_settings import DB_PATH
 from src.config.logging_config import setup_logging
-from src.config.settings import DB_PATH
 from src.database import sa_tables
 from src.database.sa_tables import Types
 from src.database.sqlite_helper import SqliteHelper
@@ -10,7 +10,7 @@ from src.translations.translation_bundle import TranslationBundle
 
 setup_logging()
 logger = logging.getLogger(__name__)
-logger.setLevel(settings.LOGGING_LVL_GLOBAL)
+logger.setLevel(default_settings.LOGGING_LVL_GLOBAL)
 
 logger.info("Starting table update")
 
@@ -25,7 +25,7 @@ no_translation_tags_to_insert = [
 # Texts that indicate that there is no alarm - empty placeholder
 placeholder_tags_to_insert = ["empty", "false", "alwaysfalse", "a", "Discretealarm"]
 # placeholder translations
-placeholder_translations = ["Alarm", "Trauksme"]  # EN, LV
+placeholder_translations = ["Trauksme, Alarm"]  # LV, EN
 
 words_to_insert = {
     "relay": ("relejs", "relay"),
@@ -123,7 +123,7 @@ def get_all_of_type_and_print(db: SqliteHelper, type: str):
 
 def get_translation_bundle() -> TranslationBundle:
     db = SqliteHelper()
-    db.init_db(url=settings.DB_PATH)
+    db.init_db(url=default_settings.DB_PATH)
     words = db.get_all_tags_of_type(type_name=Types.WORD.value)
     phrases = db.get_all_tags_of_type(type_name=Types.PHRASE.value)
     no_translations = db.get_all_tags_of_type(type_name=Types.NO_TRANSLATION.value)

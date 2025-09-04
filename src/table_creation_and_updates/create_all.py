@@ -1,9 +1,9 @@
 import logging
 import os
 
-from src.config import settings
+from src.config import default_settings
+from src.config.default_settings import DB_PATH
 from src.config.logging_config import setup_logging
-from src.config.settings import DB_PATH, PHRASE_TYPE, WORD_TYPE
 from src.database import sa_tables
 from src.database.sqlite_helper import SqliteHelper
 from src.table_creation_and_updates import table_update
@@ -11,7 +11,7 @@ from src.table_creation_and_updates.old_dics import phrases, words
 
 setup_logging()
 logger = logging.getLogger(__name__)
-logger.setLevel(settings.LOGGING_LVL_GLOBAL)
+logger.setLevel(default_settings.LOGGING_LVL_GLOBAL)
 
 
 def main_fc():
@@ -20,7 +20,7 @@ def main_fc():
 
 def create_all_from_zero():
     # create folder for script files
-    check_if_folder_exists_or_create(settings.FILE_LOC)
+    check_if_folder_exists_or_create(default_settings.FILE_LOC)
     db = SqliteHelper()
     db.init_db(url=DB_PATH)
     create_types(db)
@@ -44,11 +44,17 @@ def get_all_types_and_print(db: SqliteHelper):
 def convert_old_dicts_to_db(db: SqliteHelper):
     for word_tag, translations in words.items():
         db.insert_tag(
-            tag=word_tag, type=WORD_TYPE, lv=translations[1], en=translations[0]
+            tag=word_tag,
+            type=sa_tables.Types.WORD.value,
+            lv=translations[1],
+            en=translations[0],
         )
     for phrase_tag, translations in phrases.items():
         db.insert_tag(
-            tag=phrase_tag, type=PHRASE_TYPE, lv=translations[1], en=translations[0]
+            tag=phrase_tag,
+            type=sa_tables.Types.PHRASE.value,
+            lv=translations[1],
+            en=translations[0],
         )
 
 

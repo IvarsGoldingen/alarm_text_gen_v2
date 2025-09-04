@@ -4,14 +4,14 @@ from enum import Enum
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
 
-from src.config import settings
+from src.config import default_settings
 
 """
 SQLAlchemy tables for translations
 """
 
 logger = logging.getLogger(__name__)
-logger.setLevel(settings.LOGGING_LVL_GLOBAL)
+logger.setLevel(default_settings.LOGGING_LVL_GLOBAL)
 
 Base = declarative_base()
 

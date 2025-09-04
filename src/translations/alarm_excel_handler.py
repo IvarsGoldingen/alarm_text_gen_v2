@@ -4,7 +4,7 @@ from openpyxl import load_workbook
 from openpyxl.cell.cell import MergedCell
 from unidecode import unidecode
 
-from src.config import settings
+from src.config import default_settings
 
 COLUMN_NR_TAGS = 2
 COLUMN_NR_ALARM_TEXT = 3
@@ -12,7 +12,7 @@ DEFAULT_ALARM_SHEET_NAME = "DiscreteAlarms"
 MAX_ROW = 500
 
 logger = logging.getLogger(__name__)
-logger.setLevel(settings.LOGGING_LVL_GLOBAL)
+logger.setLevel(default_settings.LOGGING_LVL_GLOBAL)
 
 
 def get_alarms_from_excel(file_path: str) -> list[str]:

@@ -1,12 +1,12 @@
 import logging
 import re
 
-from src.config import settings
+from src.config import default_settings
 from src.database.sa_tables import AlarmLanguage, Tag
 from src.translations.translation_bundle import TranslationBundle
 
 logger = logging.getLogger(__name__)
-logger.setLevel(settings.LOGGING_LVL_GLOBAL)
+logger.setLevel(default_settings.LOGGING_LVL_GLOBAL)
 
 # What symbol to use for placeholder
 ALARM_TEXT_PLACEHOLDER = "*"
