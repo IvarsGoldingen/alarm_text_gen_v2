@@ -1,0 +1,1 @@
+App for creating alarm texts from alarm tags. For working with TIA portal HMI and SCADA alarm export excel file.

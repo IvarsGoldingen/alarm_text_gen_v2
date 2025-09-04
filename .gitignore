@@ -8,3 +8,11 @@ wheels/
 
 # Virtual environments
 .venv
+# Vscode files
+.vscode/
+
+#Example code
+old_way/
+
+# Other files
+uv.lock
