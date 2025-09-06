@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
@@ -65,17 +65,29 @@ class SqliteHelper(Db_proto):
                 session.rollback()
                 logger.warning(f"Type with name '{name}' already exists.")
 
-    def get_all_tags_of_type(self, type_name: str) -> list[Tag]:
+    def get_all_tags_of_type(
+        self, type_name: str, longest_first: bool = True
+    ) -> list[Tag]:
+        """
+        Args:
+            type_name (str): _description_
+            longest_first (bool, optional): Get longest tags first - use this normally so when translating you don' t get half translated word. Defaults to True.
+
+        Returns:
+            list[Tag]: _description_
+        """
         logger.debug(f"Gettings tags of type {type_name}")
         tags_list: list[Tag] = []
         with self.SessionLocal() as session:
             try:
-                tags_list = (
+                query = (
                     session.query(Tag)
                     .join(Tag.type_obj)
                     .filter(TagType.name == type_name)
-                    .all()
                 )
+                if longest_first:
+                    query = query.order_by(func.char_length(Tag.tag).desc())
+                tags_list = query.all()
                 logger.debug(f"Found {len(tags_list)} tags")
                 return tags_list
             except Exception as e:

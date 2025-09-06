@@ -21,8 +21,8 @@ def main():
     # translated_tags = convert_tags_to_alarm_text(
     #     test_alarm_list, AlarmLanguage.LATVIAN, bundle
     # )
-    # for tag in translated_tags:
-    #     print(tag)
+    for tag in bundle.words:
+        print(tag)
 
 
 if __name__ == "__main__":

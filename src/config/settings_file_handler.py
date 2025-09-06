@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-from dataclasses import asdict
 
 from src.config.app_settings import AppSettings
 from src.config.default_settings import LOGGING_LVL_GLOBAL
@@ -16,10 +15,11 @@ def load_settings(file_path: str) -> AppSettings:
         try:
             with open(file_path, "r") as f:
                 data = json.load(f)
-            settings = AppSettings(**data)
+            # settings = AppSettings(**data)
+            settings = AppSettings.from_dict(data)
             logger.info("Loaded settings file")
-        except (json.JSONDecodeError, TypeError):
-            logger.error("Corrupted settings file")
+        except (json.JSONDecodeError, TypeError, KeyError, ValueError) as e:
+            logger.error(f"Corrupted settings file {e}")
             settings = AppSettings()
     else:
         # Settings file does not exist, use defaults
@@ -31,5 +31,5 @@ def load_settings(file_path: str) -> AppSettings:
 # --- Save settings ---
 def save_settings(file_path: str, settings: AppSettings) -> None:
     with open(file_path, "w") as f:
-        json.dump(asdict(settings), f, indent=4)
-        logger.info("Saved settings file")
+        json.dump(settings.to_dict(), f, indent=4)
+    logger.info("Saved settings file")

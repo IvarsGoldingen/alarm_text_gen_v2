@@ -21,7 +21,6 @@ from src.translations.translations_bundle_loader import get_translation_bundle_f
 """
 TODO: Process progress
 TODO: Work freely on DB from UI 
-TODO: Have translations be received in order where longests ones are first
 """
 
 setup_logging()
@@ -89,6 +88,7 @@ def main():
 
     # Start application
     try:
+        app.on_shutdown(stop_app)
         ui.run(host="0.0.0.0", dark=True, reload=False, port=5001, native=True)
     except KeyboardInterrupt:
         logging.info("Application stopped by keyboard interrupt")
