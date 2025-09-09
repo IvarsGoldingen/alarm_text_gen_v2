@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy import create_engine, func
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import joinedload, sessionmaker
 
 from src.config import default_settings
 from src.database.db_protocol import Db_proto
@@ -65,6 +65,35 @@ class SqliteHelper(Db_proto):
                 session.rollback()
                 logger.warning(f"Type with name '{name}' already exists.")
 
+    def get_all_tags_of_type_v2(
+        self, type_name: str, longest_first: bool = True
+    ) -> list[Tag]:
+        """
+        Args:
+            type_name (str): _description_
+            longest_first (bool, optional): Get longest tags first - use this normally so when translating you don' t get half translated word. Defaults to True.
+
+        Returns:
+            list[Tag]: _description_
+        """
+        logger.debug(f"Gettings tags of type {type_name}")
+        tags_list: list[Tag] = []
+        with self.SessionLocal() as session:
+            try:
+                query = (
+                    session.query(Tag)
+                    .join(Tag.type_obj)
+                    .filter(TagType.name == type_name)
+                )
+                if longest_first:
+                    query = query.order_by(func.char_length(Tag.tag).desc())
+                tags_list = query.all()
+                logger.debug(f"Found {len(tags_list)} tags")
+                return tags_list
+            except Exception as e:
+                logger.error(f"Failed to get tags of type {type_name}. {e}")
+        return tags_list
+
     def get_all_tags_of_type(
         self, type_name: str, longest_first: bool = True
     ) -> list[Tag]:
@@ -94,16 +123,40 @@ class SqliteHelper(Db_proto):
                 logger.error(f"Failed to get tags of type {type_name}. {e}")
         return tags_list
 
-    def get_all_tags(self) -> list[Tag]:
+    def get_all_tags(self, eager_load=False) -> list[Tag]:
+        """
+        Get all tag translation from the DB
+        Args:
+            eager_load (bool, optional): Load tags eagerly - needed when using the DB editor page. Defaults to False.
+        Returns:
+            list[Tag]: list of tags and their translations
+        """
         tags_list: list[Tag] = []
         with self.SessionLocal() as session:
             try:
-                tags_list = session.query(Tag).all()
+                # tags_list = session.query(Tag).all()
+                query = session.query(Tag)
+                if eager_load:
+                    query = query.options(joinedload(Tag.type_obj))
+                tags_list = query.all()
                 logger.debug(f"Found {len(tags_list)} tags")
                 return tags_list
             except Exception as e:
                 logger.error(f"Failed to get all tags. {e}")
         return tags_list
+
+    def get_all_tags_as_dict(self) -> list[dict]:
+        tags = self.get_all_tags(eager_load=True)
+        return [
+            {
+                "id": t.id,
+                "tag": t.tag,
+                "type": t.type_obj.name,
+                "lv": t.lv,
+                "en": t.en,
+            }
+            for t in tags
+        ]
 
     def get_all_types(self) -> list[TagType]:
         types_list: list[TagType] = []
