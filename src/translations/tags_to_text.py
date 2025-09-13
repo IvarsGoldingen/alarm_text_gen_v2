@@ -112,14 +112,6 @@ def translate_tag_by_looping(
             logger.debug("Rest of tag empty, all translated")
             # Nothing to search for any more
             return full_success, alarm_text
-        number_str, rest_of_tag = extract_suplementary_number(rest_of_tag)
-        if number_str:
-            # Add number to alarm text.
-            alarm_text += f" {number_str}"
-            logger.debug(
-                f"Tag starts with number {number_str}. Alarm text so far:{alarm_text}"
-            )
-            continue
         if is_start_a_kks_code(rest_of_tag):
             # Start of tag is a KKS code
             alarm_text += f" {rest_of_tag.split('_')[0]}"
@@ -146,12 +138,21 @@ def translate_tag_by_looping(
             alarm_text += f" {translation}"
             logger.debug(f"Alarm text so far:{alarm_text}")
             continue
+        number_str, rest_of_tag = extract_suplementary_number(rest_of_tag)
+        if number_str:
+            # Add number to alarm text.
+            alarm_text += f" {number_str}"
+            logger.debug(
+                f"Tag starts with number {number_str}. Alarm text so far:{alarm_text}"
+            )
+            continue
         if is_start_letter_plus_number(rest_of_tag):
             # Start of tag is: p1, m1 or similar
             alarm_text += f" {rest_of_tag.split('_')[0]}"
             rest_of_tag = "_".join(rest_of_tag.split("_")[1:])
             logger.debug("Start of tag is string plus number")
             continue
+
         # DId not recognise anything defined in tag
         unrecognised_part, rest_of_tag = handle_unrecognised_tag_start(rest_of_tag)
         alarm_text = alarm_text + " " + unrecognised_part
@@ -298,7 +299,9 @@ def is_str_place_holder(alarm_tag: str, translations_bundle: TranslationBundle) 
         return True
     # remove "_" so empty_19 -> empty19
     no_underscores_text = alarm_tag.replace("_", "")
+    logger.debug(f"no_underscores_text {no_underscores_text}")
     for place_holder in translations_bundle.placeholders:
+        logger.debug(f"Compare w {place_holder.tag}")
         if is_string_with_number(no_underscores_text, place_holder.tag):
             # text is empty19, false21, a23 etc.
             return True

@@ -1,7 +1,12 @@
+import logging
+
 from src.config import default_settings
 from src.database.sa_tables import Types
 from src.database.sqlite_helper import SqliteHelper
 from src.translations.translation_bundle import TranslationBundle
+
+logger = logging.getLogger(__name__)
+logger.setLevel(default_settings.LOGGING_LVL_GLOBAL)
 
 
 def get_translation_bundle_from_sql() -> TranslationBundle:

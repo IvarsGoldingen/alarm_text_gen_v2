@@ -65,43 +65,17 @@ class SqliteHelper(Db_proto):
                 session.rollback()
                 logger.warning(f"Type with name '{name}' already exists.")
 
-    def get_all_tags_of_type_v2(
-        self, type_name: str, longest_first: bool = True
-    ) -> list[Tag]:
-        """
-        Args:
-            type_name (str): _description_
-            longest_first (bool, optional): Get longest tags first - use this normally so when translating you don' t get half translated word. Defaults to True.
-
-        Returns:
-            list[Tag]: _description_
-        """
-        logger.debug(f"Gettings tags of type {type_name}")
-        tags_list: list[Tag] = []
-        with self.SessionLocal() as session:
-            try:
-                query = (
-                    session.query(Tag)
-                    .join(Tag.type_obj)
-                    .filter(TagType.name == type_name)
-                )
-                if longest_first:
-                    query = query.order_by(func.char_length(Tag.tag).desc())
-                tags_list = query.all()
-                logger.debug(f"Found {len(tags_list)} tags")
-                return tags_list
-            except Exception as e:
-                logger.error(f"Failed to get tags of type {type_name}. {e}")
-        return tags_list
-
     def get_all_tags_of_type(
-        self, type_name: str, longest_first: bool = True
+        self,
+        type_name: str | None = None,
+        longest_first: bool = True,
+        eager_load: bool = True,
     ) -> list[Tag]:
         """
         Args:
-            type_name (str): _description_
+            type_name (str): if None then return all types
             longest_first (bool, optional): Get longest tags first - use this normally so when translating you don' t get half translated word. Defaults to True.
-
+            eager_load: load eagerly - needed for code not to break, because no reference to DB is held at some points in code
         Returns:
             list[Tag]: _description_
         """
@@ -109,44 +83,32 @@ class SqliteHelper(Db_proto):
         tags_list: list[Tag] = []
         with self.SessionLocal() as session:
             try:
-                query = (
-                    session.query(Tag)
-                    .join(Tag.type_obj)
-                    .filter(TagType.name == type_name)
-                )
+                query = session.query(Tag)
                 if longest_first:
                     query = query.order_by(func.char_length(Tag.tag).desc())
-                tags_list = query.all()
-                logger.debug(f"Found {len(tags_list)} tags")
-                return tags_list
-            except Exception as e:
-                logger.error(f"Failed to get tags of type {type_name}. {e}")
-        return tags_list
-
-    def get_all_tags(self, eager_load=False) -> list[Tag]:
-        """
-        Get all tag translation from the DB
-        Args:
-            eager_load (bool, optional): Load tags eagerly - needed when using the DB editor page. Defaults to False.
-        Returns:
-            list[Tag]: list of tags and their translations
-        """
-        tags_list: list[Tag] = []
-        with self.SessionLocal() as session:
-            try:
-                # tags_list = session.query(Tag).all()
-                query = session.query(Tag)
+                if type_name:
+                    query = query.join(Tag.type_obj).filter(TagType.name == type_name)
                 if eager_load:
                     query = query.options(joinedload(Tag.type_obj))
                 tags_list = query.all()
                 logger.debug(f"Found {len(tags_list)} tags")
                 return tags_list
             except Exception as e:
-                logger.error(f"Failed to get all tags. {e}")
+                logger.error(f"Failed to get tags of type {type_name}. {e}")
         return tags_list
 
-    def get_all_tags_as_dict(self) -> list[dict]:
-        tags = self.get_all_tags(eager_load=True)
+    def get_all_tags_as_dict(
+        self,
+        type_name: str | None = None,
+    ) -> list[dict]:
+        """
+        Get tags as dictionary. Needed for UI
+        Args:
+            type_name (str | None, optional): If None return all types. Defaults to None.
+        Returns:
+            list[dict]: representing Tag objects
+        """
+        tags = self.get_all_tags_of_type(eager_load=True, type_name=type_name)
         return [
             {
                 "id": t.id,
@@ -168,3 +130,7 @@ class SqliteHelper(Db_proto):
             except Exception as e:
                 logger.error(f"Failed to get all types. {e}")
         return types_list
+
+    def get_all_types_as_dict(self) -> list[dict]:
+        type_list = self.get_all_types()
+        return [{"label": t.name, "value": t.id} for t in type_list]

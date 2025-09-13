@@ -2,6 +2,7 @@ import logging
 from tkinter import Tk, filedialog
 
 from nicegui import app, ui
+from nicegui.events import GenericEventArguments
 
 from src.config import default_settings
 from src.config.logging_config import setup_logging
@@ -22,6 +23,8 @@ from src.translations.translations_bundle_loader import get_translation_bundle_f
 """
 TODO: Process progress
 TODO: Work freely on DB from UI 
+TODO: Some last actions info at bottom
+TODO: Open excel file from UI
 """
 
 setup_logging()
@@ -104,9 +107,19 @@ def main_page():
 # Page 1
 @ui.page("/db_editor_page")
 def db_editor_page():
+    """
+    Page where user can dirrectly interract with the translation database
+    """
+
+    def update_table(e: GenericEventArguments):
+        print(f"Update table fc {e.args}")
+
     ui.label("DATABASE EDITOR").classes(STYLE_TITLE)
     ui.button("HOME", on_click=lambda: ui.navigate.to("/")).style(STYLE_BTN)
-    table = ui.table(
+    tag_types_dicts = [{"label": "All", "value": None}] + get_type_dicts_for_db_editor()
+    selected_type = ui.select(tag_types_dicts, value=None, label="Filter by type")
+    selected_type.on("update:model-value", update_table)
+    ui.table(
         columns=[
             {"name": "id", "label": "ID", "field": "id"},
             {"name": "tag", "label": "Tag", "field": "tag"},
@@ -114,15 +127,23 @@ def db_editor_page():
             {"name": "lv", "label": "Latvian", "field": "lv"},
             {"name": "en", "label": "English", "field": "en"},
         ],
-        rows=get_dict_for_db_editor(),
+        rows=get_tag_dict_for_db_editor(),
         row_key="id",
     ).classes("w-full")
 
 
-def get_dict_for_db_editor() -> list[dict]:
+def get_tag_dict_for_db_editor() -> list[dict]:
     db = SqliteHelper()
     db.init_db(url=default_settings.DB_PATH)
     return db.get_all_tags_as_dict()
+
+
+def get_type_dicts_for_db_editor() -> list[dict]:
+    db = SqliteHelper()
+    db.init_db(url=default_settings.DB_PATH)
+    result = db.get_all_types_as_dict()
+    print(result)
+    return result
 
 
 def change_language():
